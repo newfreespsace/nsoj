@@ -36,6 +36,26 @@
           <a class="ui small positive button" href="<%= submissionsUrl %>">提交记录</a>
           <% if (isSupervisior) { %>
             <a class="ui small button" href="<%= syzoj.utils.makeUrl(['contest', contest.id, 'edit']) %>">编辑比赛</a>
+            <div class="ui basic modal" id="modal-delete">
+              <div class="ui icon header">
+                <i class="trash icon"></i>
+                <p style="margin-top: 15px; ">删除</p>
+              </div>
+              <div class="content" style="text-align: center; ">
+                <p>确认删除此比赛吗？</p>
+              </div>
+              <div class="actions">
+                <div class="ui red basic cancel inverted button">
+                  <i class="remove icon"></i>
+                  否
+                </div>
+                <a class="ui green ok inverted button" href-post="<%= syzoj.utils.makeUrl(['contest', contest.id, 'delete']) %>">
+                  <i class="checkmark icon"></i>
+                  是
+                </a>
+              </div>
+            </div>
+            <div class="small ui red button" onclick="$('#modal-delete').modal('show')">删除比赛</div>
           <% } %>
         </div>
       </div>

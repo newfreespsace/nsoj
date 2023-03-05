@@ -15,20 +15,13 @@ app.get('/contests', async (req, res) => {
   try {
     if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
     let where;
-    let group_num = res.locals.user.group_num;
-    if (syzoj.config.blacklist.indexOf(group_num) != -1) throw new ErrorMessage('系统维护中......');
-    if (res.locals.user && res.locals.user.is_admin) where = { hide_contest: false }
-    else if (res.locals.user && (res.locals.user.id == 81 || res.locals.user.id == 118)) where = { is_public: true, type: "ioi", hide_contest: false };
-    else if (syzoj.config.exam.indexOf(group_num) != -1) where = { is_public: true, type: "noi", hide_contest: false };
-    else where = { is_public: true, hide_contest: false };
-		     // .andWhere('submit_time > :lastTime', {lastTime: new Date().getTime() / 1000 -  2 * 365 * 24 * 60 * 60})
-
+    if (res.locals.user && res.locals.user.is_admin) where = {}
+    else where = { is_public: true };
+    where.is_hidden = false;
     let paginate = syzoj.utils.paginate(await Contest.countForPagination(where), req.query.page, syzoj.config.page.contest);
     let contests = await Contest.queryPage(paginate, where, {
-      hide_contest: 'ASC',
       start_time: 'DESC'
     });
-
 
     await contests.forEachAsync(async x => x.subtitle = await syzoj.utils.markdown(x.subtitle));
 
@@ -247,6 +240,25 @@ app.get('/contest/:id', async (req, res) => {
       hasStatistics: hasStatistics,
       isSupervisior: isSupervisior
     });
+  } catch (e) {
+    syzoj.log(e);
+    res.render('error', {
+      err: e
+    });
+  }
+});
+
+app.post('/contest/:id/delete', async (req, res) => {
+  try {
+    let id = parseInt(req.params.id);
+    let contest = await Contest.findById(id);
+    if (!contest) throw new ErrorMessage('无此比赛。');
+    if (!res.locals.user.is_admin) throw new ErrorMessage('您没有权限进行此操作。');
+
+    contest.is_hidden = true;
+    await contest.save();
+    
+    res.redirect(syzoj.utils.makeUrl(['contest']));
   } catch (e) {
     syzoj.log(e);
     res.render('error', {
