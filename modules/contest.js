@@ -18,6 +18,7 @@ app.get('/contests', async (req, res) => {
     if (res.locals.user && res.locals.user.is_admin) where = {}
     else where = { is_public: true };
     where.is_hidden = false;
+    where.type = 'noi';
     let paginate = syzoj.utils.paginate(await Contest.countForPagination(where), req.query.page, syzoj.config.page.contest);
     let contests = await Contest.queryPage(paginate, where, {
       start_time: 'DESC'
