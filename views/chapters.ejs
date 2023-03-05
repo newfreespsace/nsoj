@@ -1,0 +1,41 @@
+<% this.title='训练计划' %>
+    <% include header %>
+
+        <h1><%= trainingTitle %></h1>
+
+          <% if (user && user.is_admin) { %>
+            <form class="ui mini form">
+              <div class="inline fields" style="margin-bottom: 25px; white-space: nowrap; ">
+                <a href="<%= syzoj.utils.makeUrl(['chapter', 0, 'edit']) %>" class="ui mini labeled icon right floated button" style="margin-left: auto; ">
+                  <i class="ui icon write"></i>
+                  添加章节
+                </a>
+             </div>
+            </form>
+            <% } %>
+        
+        <table  style="text-align: left;" class="ui very basic center aligned table" width="600">
+            <thead>
+              <tr>
+                <th>id</th>
+                <th>标题</th>
+                <th>完成进度(<%= msg.ac %>/<%= msg.tot %>)</th>
+              </tr>
+            </thead>
+            <tbody>
+            <% for (let chapter of chapters) { %>
+            
+              <tr>
+                <td><%= chapter.id %></td> 
+                <td><a href="<%= syzoj.utils.makeUrl(['chapter', chapter.id]) %>"><%= chapter.title %></a></td>
+                <td>
+                    <% let timePercentage = parseInt(100 * chapter.ac_num  / chapter.tot_num)%>
+                    <div class="ui indicating progress<% if (timePercentage == 100) { %> success<% } %>" data-percent="<%= timePercentage %>">
+                        <div class="bar" style="width: <%= timePercentage %>%;"></div>
+                    </div>
+                </td>
+              </tr>
+              <% } %>
+            </tbody>
+          </table>
+<% include footer %>

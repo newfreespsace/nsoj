@@ -1,0 +1,116 @@
+<% this.title = '首页'; %>
+<% include header %>
+<div class="padding">
+  <div class="ui three column grid">
+    <div class="eleven wide column">
+      <h4 class="ui top attached block header"><i class="table tennis icon"></i><%= trainingTitle%></h4>
+      <div class="ui bottom attached segment">
+      <table  style="text-align: left;" class="ui very basic table">
+        <thead>
+          <tr>
+            <th>  标题</th>
+            <th>完成进度(<%= msg.ac %>/<%= msg.tot%>)</th>
+          </tr>
+        </thead>
+        <tbody>
+        <% for (let chapter of chapters) { %>
+        
+          <tr>
+            <td><a href="<%= syzoj.utils.makeUrl(['chapter', chapter.id]) %>"><%= chapter.title %></a></td>
+            <td>
+                <% let timePercentage = parseInt(100 * chapter.ac_num  / chapter.tot_num)%>
+                <div class="ui indicating progress<% if (timePercentage == 100) { %> success<% } %>" data-percent="<%= timePercentage %>">
+                    <div class="bar" style="width: <%= timePercentage %>%"></div>
+                </div>
+            </td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+      </div>
+    </div>
+    
+    <div class="right floated five wide column">    
+        <%
+        if (fortune) {
+            let color;
+            if (fortune.fortune.indexOf('吉') != -1) color = '#0ccf00';
+            else if (fortune.fortune.indexOf('凶') != -1) color = '#f25e65';
+            else color = '#444';
+        %>
+        <h4 class="ui top attached block header"><i class="ui magic icon"></i>今日运势</h4>
+        <div class="ui bottom attached segment">
+            <div style="height: 15px; "></div>
+            <div class="ui two column center aligned padded grid">
+                <div class="one column row">
+                    <div style="text-align: center; ">
+                        <div style="color: <%= color %>; font-size: 49px;"><%- (user.sex == -1 ? '♀ ' : '♂ ') + fortune.fortune + (user.sex == 1 ? ' <span style="transform: scaleX(-1); display: inline-block; ">♂</span>' : ' ♀') %></div>
+                    </div>
+                </div>
+                <div class="two column row">
+                    <div class="column">
+                        <div style="color: #0ccf00; ">
+                            <% if (fortune.good.length) { %>
+                            <strong>宜：</strong><%= fortune.good[0].title %>
+                            <br>
+                            <span style="color: #888; font-size: 0.7em; "><%= fortune.good[0].detail %></span>
+                            <div style="margin-top: 10px; "></div>
+                            <strong>宜：</strong><%= fortune.good[1].title %>
+                            <br>
+                            <span style="color: #888; font-size: 0.7em; "><%= fortune.good[1].detail %></span>
+                            <% } else { %>
+                            <strong>诸事不宜<br>
+                            </strong>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div style="color: #f25e65; ">
+                            <% if (fortune.bad.length) { %>
+                            <strong>忌：</strong><%= fortune.bad[0].title %>
+                            <br>
+                            <span style="color: #888; font-size: 0.7em; "><%= fortune.bad[0].detail %></span>
+                            <div style="margin-top: 10px; "></div>
+                            <strong>忌：</strong><%= fortune.bad[1].title %>
+                            <br>
+                            <span style="color: #888; font-size: 0.7em; "><%= fortune.bad[1].detail %></span>
+                            <% } else { %>
+                            <strong>万事皆宜<br>
+                            </strong>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <% if (typeof links !== 'undefined' && links && links.length) { %>
+      <h4 class="ui top attached block header font-content"><i class="ui linkify icon"></i>友情链接</h4>
+      <div class="ui bottom attached segment">
+        <ul style="margin: 0; padding-left: 20px; ">
+          <% for (let link of links) { %>
+            <li><a href="<%= link.url %>"><%= link.title %></a></li>
+          <% } %>
+        </ul>
+      </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+<script>
+$(function () {
+  $('.ui.search').search({
+    debug: true,
+    apiSettings: {
+      url: '/api/v2/search/problems/{query}',
+      cache: false
+    },
+    fields: {
+      title: 'name'
+    }
+  });
+});
+</script>
+<% include footer %>

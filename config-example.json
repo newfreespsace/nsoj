@@ -1,0 +1,196 @@
+{
+  "title": "NSOJ",
+  "hostname": "::",
+  "port": "5283",
+  "db": {
+    "database": "syzoj",
+    "username": "syzoj",
+    "password": "EJhkRhWEplWYGACp7Diy",
+    "host": "127.0.0.1",
+    "migrated_to_typeorm": true,
+    "cache_size": 10000
+  },
+  "logo": {
+    "url": null,
+    "width": null,
+    "height": null
+  },
+  "register_mail": true,
+  "email": {
+    "method": "aliyundm",
+    "options": {
+      "AccessKeyId": "xxxx",
+      "AccessKeySecret": "xxxx",
+      "AccountName": "xxxx"
+    }
+  },
+  "upload_dir": "uploads",
+  "default": {
+    "problem": {
+      "time_limit": 1000,
+      "memory_limit": 256
+    },
+    "user": {
+      "show": true,
+      "rating": 1500
+    }
+  },
+  "sorting": {
+    "ranklist": {
+      "field": "ac_num",
+      "order": "desc"
+    },
+    "problem": {
+      "field": "id",
+      "order": "asc"
+    }
+  },
+  "limit": {
+    "time_limit": 20000,
+    "memory_limit": 4096,
+    "data_size": 209715200,
+    "testdata": 209715200,
+    "submit_code": 102400,
+    "submit_answer": 10485760,
+    "custom_test_input": 20971520,
+    "testdata_filecount": 100
+  },
+  "page": {
+    "problem": 13,
+    "problem_statistics": 15,
+    "judge_state": 15,
+    "ranklist_index": 20,
+    "ranklist": 50,
+    "discussion": 15,
+    "article_comment": 15,
+    "contest": 15,
+    "edit_contest_problem_list": 10,
+    "edit_problem_tag_list": 10
+  },
+  "enabled_languages": [
+    "cpp14-O2",
+    "python3"
+  ],
+  "filter_enabled_languages": [
+    "cpp",
+    "cpp11",
+    "cpp14",
+    "cpp14-O2",
+    "cpp17",
+    "cpp-noilinux",
+    "cpp11-noilinux",
+    "cpp11-clang",
+    "cpp17-clang",
+    "c",
+    "c-noilinux",
+    "csharp",
+    "java",
+    "pascal",
+    "python2",
+    "python3",
+    "nodejs",
+    "ruby",
+    "haskell"
+  ],
+  "links": [
+    {
+      "title": "「NSOJ」入门训练",
+      "url": "/chapters/2"
+    },
+    {
+      "title": "「NSOJ」普及训练",
+      "url": "/chapters/4"
+    },
+    {
+      "title": "「NSOJ」提高训练",
+      "url": "/chapters/1"
+    },
+    {
+      "title": "「NSOJ」省选训练",
+      "url": "/chapters/5"
+    },
+    {
+      "title": "C++ 一些有用的函数和特性",
+      "url": "/article/789"
+    },
+    {
+      "title": "Typing Practice",
+      "url": "https://www.keybr.com/"
+    },
+    {
+      "title": "Graph Editor",
+      "url": "https://csacademy.com/app/graph_editor/"
+    },
+    {
+      "title": "OI Wiki",
+      "url": "https://oi-wiki.org/"
+    },
+    {
+      "title": "STL 训练",
+      "url": "/article/275"
+    },
+    {
+      "title": "重载运算符和重载函数",
+      "url": "article/297"
+    },
+    {
+      "title": "算法竞赛编程变量命名指南",
+      "url": "/article/20"
+    },
+    {
+      "title": "--------------------------------------------------",
+      "url": "#"
+    },
+    {
+      "title": "NOIP 普及组 链接",
+      "url": "/article/773"
+    },
+    {
+      "title": "NOIP 提高组 链接",
+      "url": "/article/766"
+    },
+    {
+      "title": "USACO Silver 链接",
+      "url": "/article/738"
+    },
+    {
+      "title": "USACO Gold 链接",
+      "url": "/article/737"
+    },
+    {
+      "title": "COCI 链接",
+      "url": "/article/746"
+    }
+  ],
+  "session_secret": "nCoj8WUwzjpml9og1Xq5",
+  "judge_token": "Q7VT/o8GsSzcvH4XA5/x",
+  "redis": "redis://127.0.0.1:6379",
+  "email_jwt_secret": "@EMAIL_JWT_SECRET@",
+  "google_analytics": "UA-XXXXXXXX-X",
+  "gravatar_url": "https://cdn.v2ex.com/gravatar",
+  "cdnjs_url": "built-in",
+  "self_cdn_url": "built-in",
+  "google_fonts": {
+    "type": "built-in",
+    "url": ""
+  },
+  "no_cdn": true,
+  "submissions_page_fast_pagination": false,
+  "username_regex": "^[a-zA-Z0-9\\-\\_]+$",
+  "site_for_download": "",
+  "renderer_cache_size": "30000",
+  "divine": true,
+  "lucky": false,
+  "exam": [
+    "1",
+    "23",
+    "202",
+    "223",
+    "213"
+  ],
+  "blacklist": [
+    "0",
+    "bl",
+    "4ab"
+  ]
+}

@@ -1,0 +1,26 @@
+<% this.title = chapter.id ? '编辑章节' : '新建章节' %>
+<% include header %>
+<div class="padding">
+        <form action="<%= syzoj.utils.makeUrl(['chapter', chapter.id, 'edit']) %>" method="post">
+          <div class="ui form">
+              <div class="field">
+                <label>章节名称</label>
+                <input type="text" name="title" value="<%= chapter.title %>">
+              </div>
+              <div class="field">
+                <label>描述</label>
+                <input type="text" name="subtitle" value="<%= chapter.subtitle %>">
+              </div>
+              <div class="field">
+                <label>所属训练计划</label>
+                <input type="text" name="plan_id" class="markdown-edit" value="<%= chapter.plan_id %>">
+              </div>
+              <div class="field">
+                <label>开始时间</label>
+                <input type="text" name="start_time" value="<%= syzoj.utils.formatDate(chapter.start_time || syzoj.utils.getCurrentDate()) %>">
+            </div>
+
+            <div style="text-align: center; "><button id="submit_button" type="submit" class="ui labeled icon blue button"><i class="ui edit icon"></i>提交</button></div>
+          </div>
+        </form>
+<% include footer %>

@@ -1,0 +1,97 @@
+<% this.title = contest.title + ' - 比赛' %>
+
+<style>
+  .ui.label.pointing.below.left::before {
+    left: 12%;
+  }
+
+  .ui.label.pointing.below.right::before {
+    left: 88%;
+  }
+
+  .ui.label.pointing.below.left {
+    margin-bottom: 0;
+  }
+
+  .ui.label.pointing.below.right {
+    margin-bottom: 0;
+    float: right;
+  }
+
+  #back_to_contest {
+    display: none;
+  }
+</style>
+
+
+<% include header %>
+  <div class="padding">
+    <h1><%= contest.title %></h1>
+
+    <div style="margin-bottom: 30px;">
+      
+    </div>
+
+
+    
+      
+    <% if (contest.information && false) { %>
+      <div class="row">
+        <div class="column">
+          <h4 class="ui top attached block header">信息与公告</h4>
+          <div class="ui bottom attached segment font-content">
+            <%- contest.information %>
+          </div>
+        </div>
+      </div>
+    <% } %>
+        
+        <br />
+
+          <div class="row">
+            <div class="column">
+              <table class="ui selectable celled table">
+                <thead>
+                  <tr>
+                    <th class="one wide" style="text-align: center">状态</th>
+                    <th>题目</th>
+                    <th class="one wide center aligned">通过</th>                
+                    <th class="one wide center aligned">提交</th>
+                    <th class="one wide center aligned">通过率</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% for (let problem of problems) { %>
+                    <tr>
+                      <% if (user) { %>
+                        <td class="center aligned">
+                        <% if (problem.judge_state) { %>
+
+                  
+                          <a href="<%= syzoj.utils.makeUrl(['submission', problem.judge_state.id]) %>">
+                            <span class="status <%= problem.judge_state.status.toLowerCase().split(' ').join('_') %> ">
+                              <i class="<%= icon[problem.judge_state.status] || 'remove' %> icon "></i>
+                              
+                            </span>
+                          </a>
+                        <% } %>
+                        </td>
+                    <% } %>                    
+                      <td> <a style="vertical-align: middle; " href="<%= syzoj.utils.makeUrl(['problem', problem.id]) %>">
+                        <%= syzoj.utils.removeTitleTag(problem.title) %> </a></td>
+                      <td class="center aligned" style="white-space: nowrap; "> 
+                        <%= problem.ac_num %>
+                      </td>
+                      <td class="center aligned" style="white-space: nowrap; "> <%= problem.submit_num %>   </td>
+                      <td class="center aligned" style="white-space: nowrap; "> <%= problem.submit_num != 0 ? (((problem.ac_num / problem.submit_num * 100) || 0).toFixed(2) + '%') : '-' %> </td>
+                    </tr>
+                    <% } %>
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+    </div>
+  </div>
+
+  <% include footer %>

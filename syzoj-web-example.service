@@ -1,0 +1,15 @@
+[Unit]
+Description=SYZOJ web service
+After=network.target mysql.service rc-local.service
+Requires=mysql.service rc-local.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/syzoj/web
+User=syzoj
+Group=syzoj
+ExecStart=/usr/bin/env NODE_ENV=production /usr/bin/node /opt/syzoj/web/app.js -c /opt/syzoj/config/web.json
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
