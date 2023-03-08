@@ -98,6 +98,9 @@ export default class JudgeState extends Model {
   @TypeORM.Column({ nullable: true, type: "integer" })
   type_info: number;
 
+  @TypeORM.Column({ nullable: true, type: "boolean" })
+  review: boolean;
+
   @TypeORM.Index()
   @TypeORM.Column({ nullable: true, type: "boolean" })
   is_public: boolean;

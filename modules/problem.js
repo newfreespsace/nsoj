@@ -22,6 +22,7 @@ app.get('/problems', async (req, res) => {
     
     let group_num = res.locals.user.group_num;
     if (syzoj.config.blacklist.indexOf(group_num) != -1) throw new ErrorMessage('系统维护中......');
+    console.log(syzoj.config);
     if (syzoj.config.exam.indexOf(group_num) != -1) throw new ErrorMessage('比赛期间，限制访问。');
 
     const sort = req.query.sort || syzoj.config.sorting.problem.field;
@@ -715,18 +716,21 @@ app.post('/problem/:id/submit', app.multer.fields([{ name: 'answer', maxCount: 1
     }
 
     let contest_id = parseInt(req.query.contest_id);
+    let review = parseInt(req.query.review);
+    console.log(review);
     let problems_id;
     let contest;
     if (contest_id) {
       contest = await Contest.findById(contest_id);
       if (!contest) throw new ErrorMessage('无此比赛。');
-      if ((!contest.isRunning()) && (!await contest.isSupervisior(curUser))) throw new ErrorMessage('比赛未开始或已结束。');
+      if (contest.isRunning() && review) throw new ErrorMessage('比赛尚未结束。');
+      else if (!review && ((!contest.isRunning()) && (!await contest.isSupervisior(curUser)))) throw new ErrorMessage('比赛未开始或已结束。');
       problems_id = await contest.getProblems();
       if (!problems_id.includes(id)) throw new ErrorMessage('无此题目。');
 
       judge_state.type = 1;
       judge_state.type_info = contest_id;
-
+      if (review) judge_state.review = true;
       await judge_state.save();
 
     } else {

@@ -249,6 +249,56 @@ app.get('/contest/:id', async (req, res) => {
   }
 });
 
+app.get('/contest/:id/reviews', async (req, res) => {
+  try {
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
+    const curUser = res.locals.user;
+    let contest_id = parseInt(req.params.id);
+
+    let contest = await Contest.findById(contest_id);
+    if (!contest) throw new ErrorMessage('无此比赛。');
+    let group_num = res.locals.user.group_num;
+    if (syzoj.config.exam.indexOf(group_num) != -1 && (contest.type !== 'noi')) throw new ErrorMessage('比赛期间，限制访问。');
+    if (!res.locals.user.is_admin && contest.hide_contest) throw new ErrorMessage('隐藏比赛限制访问。');
+    
+    // if contest is non-public, both system administrators and contest administrators can see it.
+    if (!contest.is_public && (!res.locals.user || (!res.locals.user.is_admin && !contest.admins.includes(res.locals.user.id.toString())))) throw new ErrorMessage('比赛未公开，请耐心等待 (´∀ `)');
+
+    contest.running = contest.isRunning();
+    contest.ended = contest.isEnded();
+    contest.subtitle = await syzoj.utils.markdown(contest.subtitle);
+    contest.information = await syzoj.utils.markdown(contest.information);
+
+    let problems_id = await contest.getProblems();
+    let problems = await problems_id.mapAsync(async id => await Problem.findById(id));
+
+    let player = null;
+
+    if (res.locals.user) {
+      player = await ContestPlayer.findInContest({
+        contest_id: contest.id,
+        user_id: res.locals.user.id
+      });
+    }
+
+    for (let problem of problems) {
+        problem.judge_state = await problem.getJudgeState(res.locals.user, true);
+    }
+
+    // res.end('this is contest_reviews');
+    res.render('contest_reviews', {
+      contest: contest,
+      problems: problems,
+    });
+  } catch (e) {
+    syzoj.log(e);
+    res.render('error', {
+      err: e
+    });
+  }
+});
+
+
 app.post('/contest/:id/delete', async (req, res) => {
   try {
     let id = parseInt(req.params.id);
@@ -501,7 +551,7 @@ app.get('/contest/submission/:id', async (req, res) => {
     if (judge.type !== 1) {
       return res.redirect(syzoj.utils.makeUrl(['submission', id]));
     }
-
+    console.log(judge);
     const contest = await Contest.findById(judge.type_info);
     contest.ended = contest.isEnded();
 
@@ -512,6 +562,12 @@ app.get('/contest/submission/:id', async (req, res) => {
     else displayConfig.showTestdata = false;
     if (contest.type === 'noi') displayConfig.showDetailResult = false;
       else displayConfig.showDetailResult = true;
+
+    if (judge.review) {
+      displayConfig.showDetailResult = true;
+      displayConfig.showResult = true;
+      displayConfig.showScore = true;
+    }
 
     await judge.loadRelationships();
     const problems_id = await contest.getProblems();
@@ -536,7 +592,7 @@ app.get('/contest/submission/:id', async (req, res) => {
         type: 'detail'
       }, syzoj.config.session_secret) : null,
       displayConfig: displayConfig,
-      contest: contest,
+      contest: contest
     });
   } catch (e) {
     syzoj.log(e);
@@ -598,6 +654,77 @@ app.get('/contest/:id/problem/:pid', async (req, res) => {
     await problem.loadRelationships();
 
     res.render('problem', {
+      pid: pid,
+      ac: ac,
+      isAdmin: res.locals.user.is_admin,
+      exam: exam,
+      discussionCount: discussionCount,
+      contest: contest,
+      problem: problem,
+      state: state,
+      lastLanguage: res.locals.user ? await res.locals.user.getLastSubmitLanguage() : null,
+      testcases: testcases
+    });
+  } catch (e) {
+    syzoj.log(e);
+    res.render('error', {
+      err: e
+    });
+  }
+});
+
+app.get('/contest/:id/problem/:pid/review', async (req, res) => {
+  try {
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
+
+    let group_num = res.locals.user.group_num;
+    if (syzoj.config.blacklist.indexOf(group_num) != -1) throw new ErrorMessage('系统维护中......');
+
+    let exam = false;
+    if (syzoj.config.exam.indexOf(group_num) != -1) exam = true;;
+
+
+    let contest_id = parseInt(req.params.id);
+    let contest = await Contest.findById(contest_id);
+    if (!contest) throw new ErrorMessage('无此比赛。');
+    const curUser = res.locals.user;
+
+    let problems_id = await contest.getProblems();
+
+    let pid = parseInt(req.params.pid);
+    if (!pid || pid < 1 || pid > problems_id.length) throw new ErrorMessage('无此题目。');
+
+    let problem_id = problems_id[pid - 1];
+    let problem = await Problem.findById(problem_id);
+    await problem.loadRelationships();
+
+    contest.ended = contest.isEnded();
+    if (!await contest.isSupervisior(curUser) && !(contest.isRunning() || contest.isEnded())) {
+      if (await problem.isAllowedUseBy(res.locals.user)) {
+        return res.redirect(syzoj.utils.makeUrl(['problem', problem_id]));
+      }
+      throw new ErrorMessage('比赛尚未开始。');
+    }
+
+    problem.specialJudge = await problem.hasSpecialJudge();
+
+    await syzoj.utils.markdown(problem, ['description', 'input_format', 'output_format', 'example', 'limit_and_hint']);
+
+    let state = await problem.getJudgeState(res.locals.user, false);
+    let testcases = await syzoj.utils.parseTestdata(problem.getTestdataPath(), problem.type === 'submit-answer');
+
+
+    if (typeof(state) === 'object') state.code = null;
+    
+    let ac_state = await problem.getJudgeState(res.locals.user, true);
+    let ac = false;
+    if (typeof(ac_state) === 'object' && ac_state.status == 'Accepted') ac = true;
+   
+    let discussionCount = await Article.count({ problem_id: problem_id });  
+
+    await problem.loadRelationships();
+
+    res.render('problem_review', {
       pid: pid,
       ac: ac,
       isAdmin: res.locals.user.is_admin,

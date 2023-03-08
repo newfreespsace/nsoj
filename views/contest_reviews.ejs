@@ -1,0 +1,71 @@
+<% this.title = contest.title + ' - 总结' %>
+<style>
+.ui.label.pointing.below.left::before { left: 12%; }
+.ui.label.pointing.below.right::before { left: 88%; }
+.ui.label.pointing.below.left { margin-bottom: 0; }
+.ui.label.pointing.below.right { margin-bottom: 0; float: right; }
+#back_to_contest { display: none;  }
+</style>
+<% include header %>
+<div class="padding">
+  <h1><%= contest.title %></h1>
+  <div style="margin-bottom: 30px;"><%- contest.subtitle %></div>  
+  <div class="ui grid">
+    <div class="row">
+      <div class="column">
+        <div class="ui buttons">
+          <a class="ui small positive button" href="#">提交记录</a>
+        </div>
+      </div>
+    </div>
+  <% if (contest.information) { %>
+    <div class="row">
+      <div class="column">
+        <h4 class="ui top attached block header">信息与公告</h4>
+        <div class="ui bottom attached segment font-content">
+          <%- contest.information %>
+        </div>
+      </div>
+    </div>
+  <% } %>
+    <div class="row">
+      <div class="column">
+         <table class="ui selectable celled table">
+            <thead>
+              <tr>
+                <th class="one wide" style="text-align: center">状态</th>
+                <th class="one wide" style="text-align: center">总结</th>
+                <th>题目</th>
+              </tr>
+            </thead>
+            <tbody>
+              <%
+              let i = 0;
+              for (let problem of problems) {
+                i++;
+              %>
+              <tr>
+                <td class="center aligned" style="white-space: nowrap; ">
+                <% if (problem.judge_state) { %>
+                  <a href="<%= syzoj.utils.makeUrl(['contest', 'submission', problem.judge_id]) %>">
+                    <span class="status <%= problem.judge_state.status.toLowerCase().split(' ').join('_') %>">
+                      <b>
+                      <i class="<%= icon[getStatusMeta(problem.judge_state.status)] || 'remove' %> icon"></i>
+                      <%= problem.feedback || problem.judge_state.status %>
+                      </b>
+                    </span>
+                  </a>
+                <% } %>
+                </td>
+                <td class="left aligned" style="white-space: nowrap; ">未提交</td>
+                <td><a href="<%= syzoj.utils.makeUrl(['contest', contest.id, 'problem', i, 'review']) %>"><%= syzoj.utils.removeTitleTag(problem.title) %></a></td>
+              </tr>
+            <% } %>
+            </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% include footer %>

@@ -182,15 +182,7 @@
   "divine": true,
   "lucky": false,
   "exam": [
-    "1",
-    "23",
-    "202",
-    "223",
-    "213"
   ],
   "blacklist": [
-    "0",
-    "bl",
-    "4ab"
   ]
 }
