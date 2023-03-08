@@ -1,3 +1,5 @@
+const { judge } = require("../libs/judger");
+
 let Problem = syzoj.model('problem');
 let Article = syzoj.model('article');
 let ArticleComment = syzoj.model('article-comment');
@@ -59,7 +61,9 @@ app.get('/discussion/problem/:pid', async (req, res) => {
     let pid = parseInt(req.params.pid);
     let problem = await Problem.findById(pid);
     if (!problem) throw new ErrorMessage('无此题目。');
-    if (!await problem.isAllowedUseBy(res.locals.user)) {
+    const judgestate = await problem.getJudgeState(res.locals.user, true);
+    
+    if (!(judgestate && judgestate.status === 'Accepted') && !await problem.isAllowedUseBy(res.locals.user) ) {
       throw new ErrorMessage('您没有权限进行此操作。');
     }
 
@@ -119,7 +123,8 @@ app.get('/article/:id', async (req, res) => {
     let problem = null;
     if (article.problem_id) {
       problem = await Problem.findById(article.problem_id);
-      if (!await problem.isAllowedUseBy(res.locals.user)) {
+      const judgestate = await problem.getJudgeState(res.locals.user, true);
+      if (!(judgestate && judgestate.status === 'Accepted') && !await problem.isAllowedUseBy(res.locals.user) ) {
         throw new ErrorMessage('您没有权限进行此操作。');
       }
     }
