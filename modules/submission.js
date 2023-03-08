@@ -177,7 +177,6 @@ app.get('/submission/:id', async (req, res) => {
     if (!await judge.isAllowedVisitBy(curUser) && false) throw new ErrorMessage('您没有权限进行此操作。'); // 2021.5.20添加false,以使得任意时刻均可查看代码
     if (!curUser.is_admin  &&  curUser.id != judge.user_id) throw new ErrorMessage('您只能查看自己的代码');
 
-
     let contest;
     if (judge.type === 1) {
       contest = await Contest.findById(judge.type_info);

@@ -567,8 +567,8 @@ app.get('/contest/submission/:id', async (req, res) => {
       displayConfig.showDetailResult = true;
       displayConfig.showResult = true;
       displayConfig.showScore = true;
+      displayConfig.review = true;
     }
-
     await judge.loadRelationships();
     const problems_id = await contest.getProblems();
     judge.problem_id = problems_id.indexOf(judge.problem_id) + 1;
