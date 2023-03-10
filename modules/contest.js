@@ -887,7 +887,7 @@ app.get('/contest/:id/problem/:pid/article/:aid', async (req, res) => {
    if (!contest) throw new ErrorMessage('无此比赛');
 
    let problems_id = await contest.getProblems();
-
+   console.log(problems_id);
    let pid = parseInt(req.params.pid);
    if (!pid || pid < 1 || pid > problems_id.length) throw new ErrorMessage('无此题目');
    let t_problem = await Problem.findById(problems_id[pid - 1]);
