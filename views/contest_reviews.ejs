@@ -57,7 +57,11 @@
                   </a>
                 <% } %>
                 </td>
-                <td class="left aligned" style="white-space: nowrap; ">未提交</td>
+                <% if (problem.latestArticle) { %>
+                  <td><a href="<%= syzoj.utils.makeUrl(['article',problem.latestArticle.id]) %>">已提交</a></td>                  
+                <% } else { %>
+                  <td><a style="color: red;" href="<%= `/article/0/edit?problem_id=${problem.id}&cid=${contest.id}&pid=${problem.id}` %>">未提交</a></td>   
+                <% } %>
                 <td><a href="<%= syzoj.utils.makeUrl(['contest', contest.id, 'problem', i, 'review']) %>"><%= syzoj.utils.removeTitleTag(problem.title) %></a></td>
               </tr>
             <% } %>

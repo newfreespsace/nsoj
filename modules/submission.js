@@ -22,16 +22,9 @@ const displayConfig = {
 // s is JudgeState
 app.get('/submissions', async (req, res) => {
   try {
-    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
-    
-    let group_num = res.locals.user.group_num;
-    if (syzoj.config.blacklist.indexOf(group_num) != -1) throw new ErrorMessage('系统维护中......');
-    if (syzoj.config.exam.indexOf(group_num) != -1) throw new ErrorMessage('比赛期间，限制访问。');
-
     const curUser = res.locals.user;
 
     let query = JudgeState.createQueryBuilder();
-    
     let isFiltered = false;
 
     let inContest = false;
@@ -44,20 +37,17 @@ app.get('/submissions', async (req, res) => {
       query.andWhere('user_id = :user_id', { user_id: 0 });
       isFiltered = true;
     }
-    
+
     if (!req.query.contest) {
-      if (res.locals.user.is_admin) query.andWhere('type != -1'); // 2021.5.20 修改,以使得sumbission里可以显示比赛里的提交
-      else { query.andWhere('type != -1'); }	   
+      query.andWhere('type = 0');
     } else {
       const contestId = Number(req.query.contest);
       const contest = await Contest.findById(contestId);
       contest.ended = contest.isEnded();
-
-      contest.ended = true; // 2021.5.21修改, 将比赛时间强制置为结束
       if ((contest.ended && contest.is_public) || // If the contest is ended and is not hidden
         (curUser && await contest.isSupervisior(curUser)) // Or if the user have the permission to check
       ) {
-         query.andWhere('type = 1');
+        query.andWhere('type = 1');
         query.andWhere('type_info = :type_info', { type_info: contestId });
         inContest = true;
       } else {
@@ -106,7 +96,7 @@ app.get('/submissions', async (req, res) => {
           throw new ErrorMessage("您没有权限进行此操作。");
         }
       } else {
-        query.andWhere('is_public = true or true');
+        query.andWhere('is_public = true');
       }
     } else if (req.query.problem_id) {
       query.andWhere('problem_id = :problem_id', { problem_id: parseInt(req.query.problem_id) || 0 });
@@ -114,7 +104,6 @@ app.get('/submissions', async (req, res) => {
     }
 
     let judge_state, paginate;
-    
 
     if (syzoj.config.submissions_page_fast_pagination) {
       const queryResult = await JudgeState.queryPageFast(query, syzoj.utils.paginateFast(
@@ -164,25 +153,17 @@ app.get('/submissions', async (req, res) => {
 
 app.get('/submission/:id', async (req, res) => {
   try {
-    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
-    
-    let group_num = res.locals.user.group_num;
-    if (syzoj.config.blacklist.indexOf(group_num) != -1) throw new ErrorMessage('系统维护中......');
-    if (syzoj.config.exam.indexOf(group_num) != -1) throw new ErrorMessage('比赛期间，限制访问。');
-
     const id = parseInt(req.params.id);
     const judge = await JudgeState.findById(id);
     if (!judge) throw new ErrorMessage("提交记录 ID 不正确。");
     const curUser = res.locals.user;
-    if (!await judge.isAllowedVisitBy(curUser) && false) throw new ErrorMessage('您没有权限进行此操作。'); // 2021.5.20添加false,以使得任意时刻均可查看代码
-    if (!curUser.is_admin  &&  curUser.id != judge.user_id) throw new ErrorMessage('您只能查看自己的代码');
+    if (!await judge.isAllowedVisitBy(curUser)) throw new ErrorMessage('您没有权限进行此操作。');
 
     let contest;
     if (judge.type === 1) {
       contest = await Contest.findById(judge.type_info);
       contest.ended = contest.isEnded();
 
-      contest.ended = true;
       if ((!contest.ended || !contest.is_public) &&
         !(await judge.problem.isAllowedEditBy(res.locals.user) || await contest.isSupervisior(curUser))) {
         throw new Error("比赛未结束或未公开。");
@@ -206,7 +187,7 @@ app.get('/submission/:id', async (req, res) => {
       }
       judge.code = await syzoj.utils.highlight(judge.code, syzoj.languages[judge.language].highlight);
     }
-    
+
     displayConfig.showRejudge = await judge.problem.isAllowedEditBy(res.locals.user);
     res.render('submission', {
       info: getSubmissionInfo(judge, displayConfig),

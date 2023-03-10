@@ -6,7 +6,7 @@ let JudgeState = syzoj.model('judge_state');
 let User = syzoj.model('user');
 let Article = syzoj.model('article');
 let ArticleComment = syzoj.model('article-comment');
-
+const { getRepository } = require('typeorm');
 
 const jwt = require('jsonwebtoken');
 const { getSubmissionInfo, getRoughResult, processOverallResult } = require('../libs/submissions_process');
@@ -24,7 +24,35 @@ app.get('/contests', async (req, res) => {
       start_time: 'DESC'
     });
 
-    await contests.forEachAsync(async x => x.subtitle = await syzoj.utils.markdown(x.subtitle));
+    await contests.forEachAsync(async x => {
+      x.subtitle = await syzoj.utils.markdown(x.subtitle);
+      x.finishedReviews = 0;
+      console.log(x);
+
+      if (x.end_time < new Date()) {
+        let player = null;
+        if (res.locals.user) {
+          player = await ContestPlayer.findInContest({
+            contest_id: x.id,
+            user_id: res.locals.user.id
+          });
+        }
+        if (player) {
+          x.isJoin = true;
+          let problems_id = await x.getProblems();
+          let problems = await problems_id.mapAsync(async id => await Problem.findById(id));
+          for (let problem of problems) {
+            const judge_state = await problem.getJudgeState(res.locals.user, true);
+            const latestArticle = await getRepository(Article)
+              .createQueryBuilder('article')
+              .where({user_id: res.locals.user.id, problem_id: problem.id })
+              .orderBy('article.id', 'DESC')
+              .getOne();
+            if (judge_state?.status === 'Accepted' && latestArticle) x.finishedReviews++;
+          }
+        }
+      }
+    });
 
     res.render('contests', {
       contests: contests,
@@ -281,8 +309,17 @@ app.get('/contest/:id/reviews', async (req, res) => {
       });
     }
 
+    if (!player) throw new ErrorMessage('未参加此比赛，无须总结。');
+
     for (let problem of problems) {
         problem.judge_state = await problem.getJudgeState(res.locals.user, true);
+        const latestArticle = await getRepository(Article)
+          .createQueryBuilder('article')
+          .where({user_id: res.locals.user.id, problem_id: problem.id })
+          .orderBy('article.id', 'DESC')
+          .getOne();
+        problem.latestArticle = latestArticle;
+        console.log(problem.latestArticle);
     }
 
     // res.end('this is contest_reviews');
