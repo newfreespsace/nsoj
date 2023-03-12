@@ -226,6 +226,7 @@ app.get('/problem/:id', async (req, res) => {
 
     let id = parseInt(req.params.id);
     let problem = await Problem.findById(id);
+    
     if (!problem) throw new ErrorMessage('无此题目。');
 
     if (!await problem.isAllowedUseBy(res.locals.user)) {
@@ -236,11 +237,17 @@ app.get('/problem/:id', async (req, res) => {
     problem.allowedManage = await problem.isAllowedManageBy(res.locals.user);
 
     if (problem.is_public || problem.allowedEdit) {
-      await syzoj.utils.markdown(problem, ['description', 'input_format', 'output_format', 'example', 'limit_and_hint']);
+      await syzoj.utils.markdown(problem, [
+        'description', 
+        'input_format', 
+        'output_format', 
+        'example', 
+        'limit_and_hint'
+      ]);
     } else {
       throw new ErrorMessage('您没有权限进行此操作。');
     }
-
+    // if (parseInt(req.params.id) === 6113) res.status(200).json(problem);
     let state = await problem.getJudgeState(res.locals.user, false);
 
     problem.tags = await problem.getTags();
@@ -250,6 +257,8 @@ app.get('/problem/:id', async (req, res) => {
 
     let discussionCount = await Article.count({ problem_id: id });
     if (typeof(state) === 'object') state.code = null;
+
+    // if (parseInt(req.params.id) === 6113) res.status(200).json(problem);
 
     res.render('problem', {
       problem: problem,
